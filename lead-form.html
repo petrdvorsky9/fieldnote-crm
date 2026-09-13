@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poptávka fotografování</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./lead-form.css" />
+  </head>
+  <body>
+    <main class="lead-form-wrap">
+      <p class="kicker">PETR DVORSKÝ · FOTOGRAF</p>
+      <h1>Poptávka fotografování</h1>
+      <p class="intro">Napište mi něco o vašem dni. Ozvu se vám co nejdříve.</p>
+      <form id="lead-form">
+        <div class="grid">
+          <label class="trap" aria-hidden="true">Nechte prázdné<input name="website" tabindex="-1" autocomplete="off" /></label>
+          <label>Jméno a příjmení<input name="name" autocomplete="name" required placeholder="Vaše jméno" /></label>
+          <label>E-mail<input name="email" type="email" autocomplete="email" required placeholder="vas@email.cz" /></label>
+          <label>Telefon<input name="phone" type="tel" autocomplete="tel" placeholder="+420 …" /></label>
+          <label>Co plánujete?<select name="sessionType" required><option value="" disabled selected>Vyberte focení</option><option>Svatba</option><option>Rodinné focení</option><option>Párové focení</option><option>Portrét</option><option>Jiné</option></select></label>
+          <label>Preferované datum<input name="eventDate" type="date" /></label>
+          <label>Místo focení<input name="location" placeholder="Město nebo místo" /></label>
+          <label class="wide">Povězte mi víc<textarea name="message" required placeholder="Koho budeme fotit, co je pro vás důležité, a cokoli dalšího…"></textarea></label>
+        </div>
+        <label class="consent"><input name="consent" type="checkbox" required /><span>Souhlasím se zpracováním údajů pro vyřízení mé poptávky.</span></label>
+        <button type="submit">Odeslat poptávku <span>→</span></button>
+      </form>
+      <div class="success" id="success" hidden><span>✓</span><h2>Děkuji za zprávu.</h2><p>Poptávka je na cestě. Brzy se vám ozvu.</p></div>
+    </main>
+    <script src="./lead-form.js"></script>
+  </body>
+</html>

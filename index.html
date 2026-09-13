@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fieldnote — Photography Studio CRM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./form-manager.css" />
+    <link rel="stylesheet" href="./lead-detail.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#dashboard" aria-label="Fieldnote home"><span class="brand-mark">f</span><span>fieldnote</span></a>
+        <nav class="nav" aria-label="Main navigation">
+          <a class="nav-item active" href="#dashboard" data-view="dashboard"><span>◫</span>Overview</a>
+          <a class="nav-item" href="#leads" data-view="leads"><span>◌</span>Leads <em id="lead-count">3</em></a>
+          <a class="nav-item" href="#jobs" data-view="jobs"><span>□</span>Jobs</a>
+          <a class="nav-item" href="#calendar" data-view="calendar"><span>□</span>Calendar</a>
+          <a class="nav-item" href="#workflows" data-view="workflows"><span>⌁</span>Workflows</a>
+          <a class="nav-item" href="#clients" data-view="clients"><span>♙</span>Clients</a>
+        </nav>
+        <div class="nav-label">SELL</div>
+        <nav class="nav">
+          <a class="nav-item" href="#booking" data-view="booking"><span>↗</span>Booking page</a>
+          <a class="nav-item" href="#forms" data-view="forms"><span>⌁</span>Lead forms</a>
+          <a class="nav-item" href="#documents" data-view="documents"><span>▤</span>Documents</a>
+          <a class="nav-item" href="#payments" data-view="payments"><span>◈</span>Payments</a>
+        </nav>
+        <div class="studio-card"><span class="avatar">P</span><div><strong>Petra D.</strong><small>Petra D. Photo</small></div><button class="dots" aria-label="Studio menu">•••</button></div>
+      </aside>
+      <main class="main">
+        <header class="topbar"><div class="crumb" id="page-kicker">MONDAY, SEPTEMBER 13</div><div class="top-actions"><button class="icon-button" id="calendar-connect" title="Google Calendar">G</button><button class="icon-button" title="Notifications">⌁</button><button class="new-button" id="new-button">+ New <span>⌄</span></button></div></header>
+
+        <section class="view active" id="dashboard">
+          <div class="page-heading"><div><p class="eyebrow">YOUR STUDIO</p><h1>Good morning, Petra.</h1><p class="subtle">Here’s what needs your attention today.</p></div><button class="outline-button" data-go="jobs">View all jobs <span>→</span></button></div>
+          <div class="stat-grid">
+            <article class="stat-card"><span class="stat-label">OPEN LEADS</span><strong id="open-leads">3</strong><small><b>+2</b> this week</small></article>
+            <article class="stat-card"><span class="stat-label">UPCOMING SHOOTS</span><strong>4</strong><small>next 30 days</small></article>
+            <article class="stat-card"><span class="stat-label">OUTSTANDING</span><strong>€2,450</strong><small>across 3 invoices</small></article>
+            <article class="stat-card warm"><span class="stat-label">FOLLOW-UPS DUE</span><strong id="followups-due">2</strong><small>worth a friendly hello</small></article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="panel agenda"><div class="panel-title"><div><p class="eyebrow">TODAY</p><h2>On your plate</h2></div><button class="text-button" data-go="calendar">Calendar →</button></div><div id="agenda-list"></div></section>
+            <section class="panel followups"><div class="panel-title"><div><p class="eyebrow">NURTURE</p><h2>Thoughtful follow-ups</h2></div><button class="text-button" data-go="workflows">Manage →</button></div><p class="helper">Your automations keep past clients close without feeling salesy.</p><div id="followup-list"></div></section>
+          </div>
+          <section class="panel pipeline"><div class="panel-title"><div><p class="eyebrow">PIPELINE</p><h2>Recent enquiries</h2></div><button class="text-button" data-go="leads">See leads →</button></div><div id="pipeline-list"></div></section>
+        </section>
+
+        <section class="view" id="leads"><div class="page-heading"><div><p class="eyebrow">ENQUIRIES</p><h1>Leads</h1><p class="subtle">Every first hello, in one calm place.</p></div><button class="primary-button" id="add-lead">+ Add lead</button></div><div class="toolbar"><input id="lead-search" placeholder="Search leads…"/><button class="filter-button">All statuses ⌄</button><button class="filter-button">All types ⌄</button></div><section class="panel table-panel"><div class="table-head lead-row"><span>CLIENT</span><span>SESSION</span><span>EVENT DATE</span><span>STATUS</span><span></span></div><div id="lead-list"></div></section></section>
+
+        <section class="view" id="jobs"><div class="page-heading"><div><p class="eyebrow">YOUR WORK</p><h1>Jobs</h1><p class="subtle">Keep every shoot moving, from first note to final delivery.</p></div><button class="primary-button" id="add-job">+ New job</button></div><div class="job-columns" id="job-board"></div></section>
+
+        <section class="view" id="calendar"><div class="page-heading"><div><p class="eyebrow">SCHEDULE</p><h1>September 2026</h1><p class="subtle">Your shoots, deadlines, and personal time.</p></div><button class="outline-button" id="google-calendar-button">G&nbsp; Connect Google Calendar</button></div><section class="panel calendar-panel"><div class="weekdays"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div><div class="calendar-grid" id="calendar-grid"></div></section></section>
+
+        <section class="view" id="workflows"><div class="page-heading"><div><p class="eyebrow">AUTOMATIONS</p><h1>Workflows</h1><p class="subtle">The little details, remembered automatically.</p></div><button class="primary-button" id="add-workflow">+ Create workflow</button></div><div class="workflow-intro"><span>✦</span><p>Automations are sent from your studio email after a job reaches a trigger point. Edit them anytime.</p></div><div id="workflow-list" class="workflow-list"></div></section>
+
+        <section class="view" id="clients"><div class="page-heading"><div><p class="eyebrow">RELATIONSHIPS</p><h1>Clients</h1><p class="subtle">The people at the heart of your studio.</p></div><button class="primary-button" id="add-client">+ Add client</button></div><section class="panel table-panel"><div class="table-head client-row"><span>CLIENT</span><span>LAST SESSION</span><span>LIFETIME VALUE</span><span>NEXT TOUCH</span></div><div id="client-list"></div></section></section>
+
+        <section class="view" id="booking"><div class="page-heading"><div><p class="eyebrow">SHAREABLE LINK</p><h1>Your booking page</h1><p class="subtle">A simple, beautiful way for clients to choose and book a session.</p></div><button class="outline-button" id="copy-booking">Copy link</button></div><div class="booking-layout"><section class="booking-preview"><div class="booking-hero"><p>PETRA D. PHOTO</p><h2>Let’s make something<br/>worth remembering.</h2><span>Portraiture · Weddings · Families</span></div><div class="booking-content"><p class="eyebrow">CHOOSE YOUR EXPERIENCE</p><div id="package-list"></div></div></section><aside class="panel booking-settings"><p class="eyebrow">PAGE SETTINGS</p><label>Studio name<input value="Petra D. Photo" /></label><label>Booking page URL<div class="input-row"><input value="fieldnote.studio/petra" readonly /><button id="copy-short">Copy</button></div></label><label class="switch-label">Accept online payments <input type="checkbox" checked /><i></i></label><button class="primary-button full" id="preview-booking">Preview client view</button></aside></div></section>
+
+        <section class="view" id="forms"><div class="page-heading"><div><p class="eyebrow">CAPTURE ENQUIRIES</p><h1>Lead forms</h1><p class="subtle">A branded enquiry form for your website, connected straight to your studio.</p></div><button class="outline-button" id="open-form">Open preview ↗</button></div><div class="form-manager"><section class="panel form-preview-panel"><div class="panel-title"><div><p class="eyebrow">ACTIVE FORM</p><h2>Poptávka fotografování</h2></div><span class="tag">Live</span></div><div class="embed-preview"><iframe title="Lead form preview" src="./lead-form.html"></iframe></div></section><aside class="panel embed-panel"><p class="eyebrow">EMBED ON YOUR WEBSITE</p><h2>One copy &amp; paste</h2><p>Paste this where your current iframe sits. Each completed form becomes a lead, starts your new-enquiry workflow, and can notify you by email.</p><pre id="embed-code">&lt;iframe src=&quot;https://YOUR-CRM-DOMAIN/lead-form.html&quot; width=&quot;100%&quot; height=&quot;860&quot; frameborder=&quot;0&quot; title=&quot;Poptávka fotografování&quot;&gt;&lt;/iframe&gt;</pre><button class="primary-button full" id="copy-embed">Copy embed code</button><hr/><p class="eyebrow">NOTIFICATION</p><div class="notification-row"><span class="notify-dot"></span><div><strong>Email on new lead</strong><small>Send to photo@petrdvorsky.com</small></div><input class="toggle" type="checkbox" checked aria-label="Email notification enabled"/></div><p class="tiny-note">Connect Resend or another email provider when you publish the CRM. No client data is sent from this prototype.</p></aside></div><section class="panel field-panel"><div class="panel-title"><div><p class="eyebrow">FORM FIELDS</p><h2>What clients will see</h2></div><button class="text-button">Edit fields →</button></div><div class="field-chips"><span>Full name</span><span>Email</span><span>Phone</span><span>Type of photoshoot</span><span>Preferred date</span><span>Location</span><span>Message</span><span>Privacy consent</span></div></section></section>
+
+        <section class="view" id="documents"><div class="page-heading"><div><p class="eyebrow">CLIENT DOCUMENTS</p><h1>Documents</h1><p class="subtle">Polished proposals, clear contracts, and easy signing.</p></div><button class="primary-button" id="new-document">+ New document</button></div><div class="document-grid"><article class="document-card"><span class="doc-icon">↗</span><p class="eyebrow">QUOTE TEMPLATE</p><h3>Portrait session proposal</h3><p>Packages, add-ons & payment schedule</p><button class="text-button">Edit template →</button></article><article class="document-card"><span class="doc-icon">§</span><p class="eyebrow">CONTRACT TEMPLATE</p><h3>Wedding photography agreement</h3><p>Electronic signature enabled</p><button class="text-button">Edit template →</button></article><article class="document-card"><span class="doc-icon">?</span><p class="eyebrow">QUESTIONNAIRE</p><h3>Pre-wedding details</h3><p>13 thoughtful questions</p><button class="text-button">Edit template →</button></article></div><section class="panel table-panel document-list"><div class="panel-title"><div><p class="eyebrow">RECENTLY SENT</p><h2>Client documents</h2></div></div><div id="document-list"></div></section></section>
+
+        <section class="view" id="payments"><div class="page-heading"><div><p class="eyebrow">MONEY</p><h1>Payments</h1><p class="subtle">A clear picture of what’s paid and what’s coming.</p></div><button class="primary-button" id="new-invoice">+ Create invoice</button></div><div class="stat-grid"><article class="stat-card"><span class="stat-label">PAID THIS MONTH</span><strong>€4,820</strong><small><b>+18%</b> vs. August</small></article><article class="stat-card"><span class="stat-label">OUTSTANDING</span><strong>€2,450</strong><small>3 invoices</small></article><article class="stat-card"><span class="stat-label">NEXT 30 DAYS</span><strong>€3,100</strong><small>expected income</small></article></div><section class="panel table-panel payments-table"><div class="table-head invoice-row"><span>INVOICE</span><span>CLIENT</span><span>DUE</span><span>AMOUNT</span><span>STATUS</span></div><div id="invoice-list"></div></section></section>
+        <section class="view" id="lead-detail"><div class="lead-detail-top"><button class="back-button" id="back-to-leads">← All leads</button><button class="outline-button" id="detail-add">+ Add new</button></div><div id="lead-detail-content"></div></section>
+      </main>
+    </div>
+    <dialog id="modal"><form method="dialog" id="modal-form"><button class="modal-close" value="cancel" aria-label="Close">×</button><div id="modal-content"></div></form></dialog>
+    <div class="toast" id="toast"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
