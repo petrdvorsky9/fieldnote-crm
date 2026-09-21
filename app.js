@@ -1,3 +1,4 @@
+(async function startStudio() {
 const today = new Date(2026, 8, 13);
 const seed = {
   leads:[
@@ -25,9 +26,27 @@ const seed = {
     {name:'The Maliks', initials:'TM', last:'Family · Aug 21, 2026', value:'€620', touch:'Family nurture · Nov 21'}
   ]
 };
-const state = JSON.parse(localStorage.getItem('fieldnote-data') || 'null') || structuredClone(seed);
+const initialResponse = await fetch('/api/state');
+if (!initialResponse.ok) throw new Error('Unable to load your studio. Please refresh to try again.');
+const remoteState = await initialResponse.json();
+const legacyState = JSON.parse(localStorage.getItem('fieldnote-data') || 'null');
+const state = remoteState || legacyState || structuredClone(seed);
+state.workflowTemplates ||= [];
+if (!remoteState) {
+  const migrated = await fetch('/api/state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) });
+  if (!migrated.ok) throw new Error('Unable to save your studio. Please refresh to try again.');
+}
+localStorage.removeItem('fieldnote-data');
 state.leads.forEach((lead,index)=>{if(!lead.id)lead.id=`local-${Date.now()}-${index}`;});
-const save=()=>localStorage.setItem('fieldnote-data',JSON.stringify(state));
+let pendingSave = Promise.resolve();
+const save=()=>{
+  const snapshot = JSON.stringify(state);
+  pendingSave = pendingSave.then(async () => {
+    const response = await fetch('/api/state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: snapshot });
+    if (!response.ok) throw new Error('Save failed');
+  }).catch(() => showToast('Changes could not be saved. Please check your connection.'));
+  return pendingSave;
+};
 const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function tag(status){const style=status.includes('due')?'peach':status.includes('sent')?'yellow':'';return `<b class="tag ${style}">${esc(status)}</b>`}
@@ -39,6 +58,7 @@ function render(){
   leadRender(state.leads);
   const stages=['Upcoming','Editing','Delivery']; $('#job-board').innerHTML=stages.map(stage=>`<div class="job-column"><div class="column-heading"><span>${stage.toUpperCase()}</span><span>${state.jobs.filter(j=>j.stage===stage).length}</span></div>${state.jobs.filter(j=>j.stage===stage).map(j=>`<article class="job-card"><span class="job-date">${j.date}</span><h3>${esc(j.name)}</h3><p>${esc(j.type)}</p><div class="progress"><i style="width:${j.progress}%"></i></div></article>`).join('')}</div>`).join('');
   $('#workflow-list').innerHTML=state.workflows.map((w,i)=>`<article class="workflow-card"><span class="workflow-symbol">⌁</span><div><h3>${esc(w.title)}</h3><p>Triggers ${esc(w.trigger)}</p><div class="steps">${w.steps.map((s,i)=>`${i?'<span class="arrow">→</span>':''}<span class="step">${esc(s)}</span>`).join('')}</div></div><input aria-label="Toggle ${esc(w.title)}" class="toggle" data-workflow="${i}" type="checkbox" ${w.active?'checked':''}></article>`).join('');
+  $('#workflow-template-list').innerHTML=state.workflowTemplates.length?state.workflowTemplates.map(template=>`<button type="button" class="workflow-template-row" data-open-template="${esc(template.id)}"><span>${esc(template.name)}</span><span aria-hidden="true">→</span></button>`).join(''):'<p class="workflow-template-empty">No workflow templates yet. Add your first template to get started.</p>';
   $('#client-list').innerHTML=state.clients.map(c=>`<div class="client-row"><div><span class="lead-avatar">${c.initials}</span><div class="client-main"><strong>${esc(c.name)}</strong><small>Client since 2026</small></div></div><span>${esc(c.last)}</span><strong>${esc(c.value)}</strong><span>${esc(c.touch)}</span></div>`).join('');
   $('#package-list').innerHTML=[['Couple session','90 minute session · 35 images','€390'],['Family story','Up to 90 minutes · 50 images','€490'],['Full wedding day','10 hours · Full gallery','from €2,700']].map(p=>`<div class="package"><div><h3>${p[0]}</h3><p>${p[1]}</p></div><strong>${p[2]}</strong></div>`).join('');
   $('#document-list').innerHTML=[['Portrait session proposal','Sofia Kralova','Viewed today'],['Wedding photography agreement','Anna & David Novak','Awaiting signature'],['Invoice #2026-041','Katerina & Jakub','Paid Sep 8']].map(d=>`<div class="doc-row"><div><strong>${d[0]}</strong><span> · ${d[1]}</span></div><span>${d[2]}</span></div>`).join('');
@@ -47,6 +67,31 @@ function render(){
 }
 function leadRender(leads){$('#lead-list').innerHTML=leads.map(l=>`<div class="lead-row lead-link" data-open-lead="${esc(l.id)}"><div><span class="lead-avatar">${esc(l.initials)}</span><div class="lead-main"><strong>${esc(l.name)}</strong><small>${esc(l.email)}</small></div></div><span>${esc(l.session)}</span><span>${esc(l.date)}</span>${tag(l.status)}<button class="row-menu">···</button></div>`).join('')||'<p class="helper">No leads match that search.</p>'}
 let activeLeadId=null;
+let activeWorkflowTemplateId=null;
+const currentTemplate=()=>state.workflowTemplates.find(item=>item.id===activeWorkflowTemplateId);
+const defaultTemplateTasks=()=>[
+  {id:crypto.randomUUID(),name:'Lead created',description:'',stage:'lead',fixed:true},
+  {id:crypto.randomUUID(),name:'Job accepted',description:'This checks automatically when a quote is accepted OR a contract is signed OR an invoice is paid. Once checked this lead becomes a job.',stage:'production',fixed:true},
+  {id:crypto.randomUUID(),name:'Focení',description:'',stage:'production',fixed:true},
+  {id:crypto.randomUUID(),name:'Job complete',description:'',stage:'complete',fixed:true}
+];
+function renderWorkflowTemplate(){
+  const template=currentTemplate();if(!template)return;
+  $('#workflow-template-title').textContent=template.name;
+  $('#workflow-template-name').value=template.name;
+  const tasks=template.tasks||[];
+  const stages=[['lead','LEAD'],['production','PRODUCTION'],['complete','COMPLETE']];
+  $('#workflow-template-tasks').innerHTML=stages.map(([stage,label])=>{
+    const rows=tasks.filter(task=>task.stage===stage).map(task=>{
+      const actions=task.fixed?'':`<div class="workflow-task-actions"><button type="button" data-task-action="edit" title="Edit task" aria-label="Edit ${esc(task.name)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m14 7 3 3"/></svg></button><button type="button" data-task-action="duplicate" title="Duplicate task" aria-label="Duplicate ${esc(task.name)}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><button type="button" data-task-action="delete" title="Delete task" aria-label="Delete ${esc(task.name)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v6m4-6v6"/></svg></button><span class="workflow-drag-handle" title="Drag to reorder" aria-hidden="true">⋮⋮</span></div>`;
+      const row=`<div class="workflow-edit-row ${task.fixed?'workflow-fixed-row':''}" draggable="${!task.fixed}" data-task-id="${esc(task.id)}"><div class="workflow-edit-copy"><strong>${esc(task.name)}</strong>${task.description?`<small>${esc(task.description)}</small>`:''}${task.name==='Focení'?'<span class="workflow-task-pill">Focení</span>':''}${task.dueMode==='flagged'?'<span class="workflow-task-pill flagged">Flagged on due date</span>':''}</div>${actions}</div>`;
+      const gap=task===tasks[tasks.length-1]?'':`<div class="workflow-insert-gap"><button type="button" class="workflow-insert-button" data-insert-after="${esc(task.id)}" aria-label="Add task after ${esc(task.name)}"><span class="workflow-insert-plus" aria-hidden="true">+</span><span>Add task here</span></button></div>`;
+      return row+gap;
+    }).join('');
+    return `<div class="workflow-stage workflow-stage-${stage}"><div class="workflow-stage-label">${label}</div><div class="workflow-stage-rows" data-stage="${stage}">${rows||'<p class="workflow-stage-empty">No tasks</p>'}</div></div>`;
+  }).join('');
+}
+function openWorkflowTemplate(id){const template=state.workflowTemplates.find(item=>item.id===id);if(!template)return;activeWorkflowTemplateId=id;if(!template.tasks){template.tasks=defaultTemplateTasks();save();}else{let changed=false;for(const task of template.tasks){if(['Lead created','Job accepted','Photoshoot','Focení','Job complete'].includes(task.name)&&!task.fixed){task.fixed=true;changed=true;}if(task.name==='Photoshoot'){task.name='Focení';changed=true;}}if(changed)save();}renderWorkflowTemplate();go('workflow-template-detail');}
 const defaultLeadWorkflow=()=>[{label:'New lead',detail:'Enquiry received',done:true},{label:'Create a job',detail:'Confirm the booking and schedule the session',done:false},{label:'Shooting day',detail:'Mark complete once the session has taken place',done:false},{label:'Complete the job',detail:'Deliver the final work and close this job',done:false}];
 function openLead(id){activeLeadId=id;history.replaceState(null,'',`#lead=${encodeURIComponent(id)}`);renderLeadDetail();go('lead-detail');}
 function openLinkedLead(){const match=location.hash.match(/lead=([^&]+)/);if(match&&state.leads.some(lead=>lead.id===decodeURIComponent(match[1])))openLead(decodeURIComponent(match[1]));}
@@ -57,6 +102,20 @@ function go(view){$$('.view').forEach(v=>v.classList.toggle('active',v.id===view
 function showModal(kind){let html='';if(kind==='lead')html=`<h2 class="modal-title">Add a lead</h2><p class="modal-sub">A new enquiry, ready for a thoughtful reply.</p><div class="form-grid"><label>CLIENT NAME<input name="name" required placeholder="e.g. Anna Novak" /></label><label>EMAIL<input name="email" type="email" required placeholder="anna@example.com" /></label><label>SESSION TYPE<select name="session"><option>Wedding</option><option>Family session</option><option>Couple session</option><option>Portrait</option></select></label><label>EVENT DATE<input name="date" type="date" /></label><label class="wide">YOUR NOTES<textarea name="notes" placeholder="What are they looking for?"></textarea></label></div><div class="modal-actions"><button value="cancel" class="outline-button">Cancel</button><button class="primary-button" value="default">Save lead</button></div>`;else if(kind==='workflow')html=`<h2 class="modal-title">Create a workflow</h2><p class="modal-sub">Make every client follow-up feel intentional.</p><div class="form-grid"><label class="wide">WORKFLOW NAME<input name="workflowName" required placeholder="e.g. Gallery delivery follow-up" /></label><label>TRIGGER<select name="trigger"><option>1 year after completed wedding</option><option>6 weeks after gallery delivery</option><option>After invoice is paid</option><option>After job is completed</option></select></label><label>FIRST ACTION<select name="action"><option>Send email</option><option>Create task</option><option>Send questionnaire</option></select></label></div><div class="modal-actions"><button value="cancel" class="outline-button">Cancel</button><button class="primary-button" value="default">Create workflow</button></div>`;else html=`<h2 class="modal-title">Create a new job</h2><p class="modal-sub">Start a project and its checklist.</p><div class="form-grid"><label>JOB NAME<input name="jobName" required placeholder="e.g. The Novaks" /></label><label>SESSION TYPE<select name="jobType"><option>Wedding</option><option>Family session</option><option>Couple session</option><option>Portrait</option></select></label><label>SHOOT DATE<input name="jobDate" type="date" /></label><label>STATUS<select name="jobStage"><option>Upcoming</option><option>Editing</option><option>Delivery</option></select></label><label class="wide">NOTES<textarea name="jobNotes" placeholder="Anything important to remember…"></textarea></label></div><div class="modal-actions"><button value="cancel" class="outline-button">Cancel</button><button class="primary-button" value="default">Create job</button></div>`;$('#modal-content').innerHTML=html;$('#modal').dataset.kind=kind;$('#modal').showModal()}
 $$('.nav-item').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.view)}));$$('[data-go]').forEach(a=>a.addEventListener('click',()=>go(a.dataset.go)));
 $('#new-button').addEventListener('click',()=>showModal('lead'));$('#add-lead').addEventListener('click',()=>showModal('lead'));$('#add-client').addEventListener('click',()=>showModal('lead'));$('#add-job').addEventListener('click',()=>showModal('job'));$('#add-workflow').addEventListener('click',()=>showModal('workflow'));
+$('#add-workflow-template').addEventListener('click',()=>$('#workflow-template-modal').showModal());
+$('#workflow-template-list').addEventListener('click',e=>{const row=e.target.closest('[data-open-template]');if(row)openWorkflowTemplate(row.dataset.openTemplate);});
+$('#back-to-workflow-templates').addEventListener('click',()=>go('workflow-templates'));
+$('#workflow-template-form').addEventListener('submit',e=>{if(e.submitter.value==='cancel')return;const name=new FormData(e.currentTarget).get('name').trim();if(!name)return;const template={id:crypto.randomUUID(),name,tasks:defaultTemplateTasks()};state.workflowTemplates.push(template);save();render();e.currentTarget.reset();openWorkflowTemplate(template.id);showToast('Workflow template created.');});
+$('#workflow-template-name').addEventListener('change',e=>{const template=currentTemplate();if(!template)return;const name=e.target.value.trim();if(!name){e.target.value=template.name;return;}template.name=name;save();render();renderWorkflowTemplate();});
+let editingTemplateTaskId=null;
+let insertAfterTemplateTaskId=null;
+function showTaskModal(task,afterId=null){editingTemplateTaskId=task?.id||null;insertAfterTemplateTaskId=afterId;const form=$('#workflow-task-form');form.reset();form.elements.name.value=task?.name||'';form.querySelector(`[name="dueMode"][value="${task?.dueMode||'none'}"]`).checked=true;$('#workflow-task-modal-title').textContent=task?'Edit To-do':'Add a New To-do';$('#workflow-task-modal').showModal();form.elements.name.focus();}
+$('#workflow-task-form').addEventListener('submit',e=>{if(e.submitter.value==='cancel')return;const template=currentTemplate();if(!template)return;const data=new FormData(e.currentTarget);const name=data.get('name').trim();if(!name)return;const task=template.tasks.find(item=>item.id===editingTemplateTaskId);if(task){task.name=name;task.dueMode=data.get('dueMode');}else{const afterIndex=template.tasks.findIndex(item=>item.id===insertAfterTemplateTaskId);if(afterIndex<0)return;template.tasks.splice(afterIndex+1,0,{id:crypto.randomUUID(),name,description:'',stage:template.tasks[afterIndex].stage,dueMode:data.get('dueMode'),fixed:false});}save();renderWorkflowTemplate();});
+$('#workflow-template-tasks').addEventListener('click',e=>{const insert=e.target.closest('[data-insert-after]');if(insert){showTaskModal(null,insert.dataset.insertAfter);return;}const action=e.target.closest('[data-task-action]')?.dataset.taskAction;const id=e.target.closest('[data-task-id]')?.dataset.taskId;const template=currentTemplate();const task=template?.tasks.find(item=>item.id===id);if(!action||!task||task.fixed)return;if(action==='edit')showTaskModal(task);if(action==='duplicate'){const index=template.tasks.indexOf(task);template.tasks.splice(index+1,0,{...task,id:crypto.randomUUID(),name:`${task.name} copy`});save();renderWorkflowTemplate();}if(action==='delete'){template.tasks=template.tasks.filter(item=>item.id!==id);save();renderWorkflowTemplate();}});
+let draggedTemplateTaskId=null;
+$('#workflow-template-tasks').addEventListener('dragstart',e=>{const row=e.target.closest('[data-task-id]');if(!row||currentTemplate()?.tasks.find(item=>item.id===row.dataset.taskId)?.fixed){e.preventDefault();return;}draggedTemplateTaskId=row.dataset.taskId;e.dataTransfer.effectAllowed='move';});
+$('#workflow-template-tasks').addEventListener('dragover',e=>{if(e.target.closest('[data-stage]'))e.preventDefault();});
+$('#workflow-template-tasks').addEventListener('drop',e=>{const container=e.target.closest('[data-stage]');const template=currentTemplate();if(!container||!template||!draggedTemplateTaskId)return;e.preventDefault();const task=template.tasks.find(item=>item.id===draggedTemplateTaskId);if(!task||task.fixed||task.stage!==container.dataset.stage)return;const target=e.target.closest('[data-task-id]');const targetTask=template.tasks.find(item=>item.id===target?.dataset.taskId);if(targetTask?.fixed)return;template.tasks=template.tasks.filter(item=>item.id!==task.id);const index=targetTask?template.tasks.findIndex(item=>item.id===targetTask.id):template.tasks.findLastIndex(item=>item.stage===task.stage)+1;template.tasks.splice(index<0?template.tasks.length:index,0,task);draggedTemplateTaskId=null;save();renderWorkflowTemplate();});
 $('#modal-form').addEventListener('submit',e=>{const kind=$('#modal').dataset.kind;if(e.submitter.value==='cancel')return;const f=new FormData(e.currentTarget);if(kind==='lead'){let name=f.get('name');state.leads.unshift({name,initials:name.split(/\s|&/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase(),session:f.get('session'),date:f.get('date')?new Date(f.get('date')).toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'}):'Date to confirm',status:'New enquiry',email:f.get('email')});state.clients.unshift({name,initials:name.split(/\s|&/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase(),last:'New enquiry',value:'—',touch:'Reply to enquiry'});showToast('Lead saved — your welcome workflow is ready.')}else if(kind==='workflow'){state.workflows.unshift({title:f.get('workflowName'),trigger:f.get('trigger'),steps:[`${f.get('action').toUpperCase()} · First touch`,'REMINDER · Follow up'],active:true});showToast('Workflow is active. Nice work.')}else{state.jobs.unshift({name:f.get('jobName'),type:f.get('jobType'),date:f.get('jobDate')?new Date(f.get('jobDate')).toLocaleDateString('en',{month:'short',day:'numeric'}).toUpperCase():'DATE TBC',stage:f.get('jobStage'),progress:5});showToast('Job created with a fresh checklist.')}save();render()});
 $('#lead-search').addEventListener('input',e=>leadRender(state.leads.filter(l=>JSON.stringify(l).toLowerCase().includes(e.target.value.toLowerCase()))));
 document.addEventListener('change',e=>{if(e.target.matches('[data-workflow]')){state.workflows[e.target.dataset.workflow].active=e.target.checked;save();showToast(e.target.checked?'Workflow switched on.':'Workflow paused.')}if(e.target.matches('[data-lead-workflow]')&&activeLeadId){const lead=state.leads.find(item=>item.id===activeLeadId);lead.workflow[e.target.dataset.leadWorkflow].done=e.target.checked;save();renderLeadDetail();}});
@@ -74,3 +133,6 @@ async function hydrateSubmittedLeads(){try{const response=await fetch('/api/lead
 hydrateSubmittedLeads();
 openLinkedLead();
 window.setInterval(hydrateSubmittedLeads, 60 * 60 * 1000);
+})().catch(error => {
+  document.querySelector('.main').textContent = error.message;
+});

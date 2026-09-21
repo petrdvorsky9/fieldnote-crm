@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in — Fieldnote</title><link rel="stylesheet" href="/login.css"><script src="/login.js" defer></script></head>
+<body><main class="login-shell">
+  <section class="welcome"><a class="brand" href="/login"><span class="mark">f</span>fieldnote</a><div><p class="eyebrow">A LITTLE SPACE FOR YOUR STUDIO</p><h1>More time for<br>what you love.</h1><p>Your people, your projects, and the little details.<br>All together in one calm place.</p></div><span class="welcome-footer">MADE FOR THE WAY YOU CREATE</span></section>
+  <section class="entry"><div class="card"><p class="eyebrow">YOUR PRIVATE STUDIO</p><h2 id="heading">Welcome back.</h2><p class="description" id="description">Sign in to pick up where you left off.</p>
+  <form id="login-form"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="username" placeholder="you@yourstudio.com" required maxlength="254">
+  <label for="password">Password</label><div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"><button id="show-password" type="button" aria-label="Show password">Show</button></div>
+  <p class="hint" id="password-hint" hidden>Use at least 14 characters. A unique passphrase works well.</p>
+  <p id="error" role="alert" aria-live="polite"></p><button class="submit" id="submit" disabled>Sign in <span>→</span></button></form>
+  <p class="footer">Your session ends after 30 minutes of inactivity.</p></div></section>
+</main></body></html>

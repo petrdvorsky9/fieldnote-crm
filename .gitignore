@@ -1,3 +1,6 @@
 leads.json
 .env
 node_modules/
+.owner.json
+.studio.json
+.studio.json.tmp

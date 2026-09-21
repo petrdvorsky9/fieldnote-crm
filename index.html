@@ -30,6 +30,10 @@
           <a class="nav-item" href="#documents" data-view="documents"><span>▤</span>Documents</a>
           <a class="nav-item" href="#payments" data-view="payments"><span>◈</span>Payments</a>
         </nav>
+        <div class="nav-label">ACCOUNT</div>
+        <nav class="nav" aria-label="Account navigation">
+          <a class="nav-item" href="#settings" data-view="settings"><span>⚙</span>Settings</a>
+        </nav>
         <div class="studio-card"><span class="avatar">P</span><div><strong>Petra D.</strong><small>Petra D. Photo</small></div><button class="dots" aria-label="Studio menu">•••</button></div>
       </aside>
       <main class="main">
@@ -67,11 +71,41 @@
         <section class="view" id="documents"><div class="page-heading"><div><p class="eyebrow">CLIENT DOCUMENTS</p><h1>Documents</h1><p class="subtle">Polished proposals, clear contracts, and easy signing.</p></div><button class="primary-button" id="new-document">+ New document</button></div><div class="document-grid"><article class="document-card"><span class="doc-icon">↗</span><p class="eyebrow">QUOTE TEMPLATE</p><h3>Portrait session proposal</h3><p>Packages, add-ons & payment schedule</p><button class="text-button">Edit template →</button></article><article class="document-card"><span class="doc-icon">§</span><p class="eyebrow">CONTRACT TEMPLATE</p><h3>Wedding photography agreement</h3><p>Electronic signature enabled</p><button class="text-button">Edit template →</button></article><article class="document-card"><span class="doc-icon">?</span><p class="eyebrow">QUESTIONNAIRE</p><h3>Pre-wedding details</h3><p>13 thoughtful questions</p><button class="text-button">Edit template →</button></article></div><section class="panel table-panel document-list"><div class="panel-title"><div><p class="eyebrow">RECENTLY SENT</p><h2>Client documents</h2></div></div><div id="document-list"></div></section></section>
 
         <section class="view" id="payments"><div class="page-heading"><div><p class="eyebrow">MONEY</p><h1>Payments</h1><p class="subtle">A clear picture of what’s paid and what’s coming.</p></div><button class="primary-button" id="new-invoice">+ Create invoice</button></div><div class="stat-grid"><article class="stat-card"><span class="stat-label">PAID THIS MONTH</span><strong>€4,820</strong><small><b>+18%</b> vs. August</small></article><article class="stat-card"><span class="stat-label">OUTSTANDING</span><strong>€2,450</strong><small>3 invoices</small></article><article class="stat-card"><span class="stat-label">NEXT 30 DAYS</span><strong>€3,100</strong><small>expected income</small></article></div><section class="panel table-panel payments-table"><div class="table-head invoice-row"><span>INVOICE</span><span>CLIENT</span><span>DUE</span><span>AMOUNT</span><span>STATUS</span></div><div id="invoice-list"></div></section></section>
+        <section class="view" id="settings">
+          <div class="page-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h1>Settings</h1><p class="subtle">Manage your studio and account preferences.</p></div></div>
+          <section class="settings-section" aria-labelledby="settings-templates-heading">
+            <h2 id="settings-templates-heading">Templates</h2>
+            <div class="settings-grid">
+              <article class="settings-tile"><span class="settings-icon" aria-hidden="true">✉</span><h3>Email Templates</h3><p>Customise your email templates.</p></article>
+              <article class="settings-tile"><span class="settings-icon" aria-hidden="true">▦</span><h3>Products &amp; Packages</h3><p>Create products and packages that you sell.</p></article>
+              <article class="settings-tile"><span class="settings-icon" aria-hidden="true">☷</span><h3>Quote &amp; Invoice Templates</h3><p>Customise your quote and invoice templates.</p></article>
+              <article class="settings-tile"><span class="settings-icon" aria-hidden="true">▤</span><h3>Contract Templates</h3><p>Customise your contract templates.</p></article>
+              <article class="settings-tile"><span class="settings-icon" aria-hidden="true">☷</span><h3>Questionnaire Templates</h3><p>Customise your questionnaire templates.</p></article>
+              <button class="settings-tile settings-tile-button" type="button" data-go="workflow-templates"><span class="settings-icon" aria-hidden="true">⌁</span><span class="settings-tile-title">Workflow Templates</span><span class="settings-tile-description">Create workflows and automation.</span></button>
+            </div>
+          </section>
+        </section>
+        <section class="view" id="workflow-templates">
+          <div class="page-heading"><div><p class="eyebrow">SETTINGS</p><h1>Workflow Templates</h1><p class="subtle">Reusable task lists for your leads and jobs.</p></div><button class="primary-button" id="add-workflow-template">+ Add a New Workflow Template</button></div>
+          <nav class="settings-breadcrumb" aria-label="Breadcrumb"><button type="button" data-go="dashboard">Overview</button><span>›</span><button type="button" data-go="settings">Settings</button><span>›</span><span>Workflow Templates</span></nav>
+          <section class="panel workflow-templates-panel"><p class="helper">Create a workflow template to reuse for future leads and jobs.</p><div class="workflow-template-heading">NAME</div><div id="workflow-template-list"></div></section>
+        </section>
+        <section class="view" id="workflow-template-detail">
+          <div class="page-heading"><div><p class="eyebrow">WORKFLOW TEMPLATE</p><h1 id="workflow-template-title"></h1></div><button class="outline-button" id="back-to-workflow-templates">← All workflow templates</button></div>
+          <section class="workflow-editor">
+            <p class="workflow-editor-intro">Add, edit, delete, or duplicate tasks and drag them into the order you want.</p>
+            <div class="workflow-editor-toolbar"><label for="workflow-template-name">Workflow Name*</label><input id="workflow-template-name" maxlength="120" required /><span class="workflow-save-status" id="workflow-save-status" role="status">✓ All changes saved</span></div>
+            <div id="workflow-template-tasks" class="workflow-template-tasks"></div>
+          </section>
+        </section>
         <section class="view" id="lead-detail"><div class="lead-detail-top"><button class="back-button" id="back-to-leads">← All leads</button><button class="outline-button" id="detail-add">+ Add new</button></div><div id="lead-detail-content"></div></section>
       </main>
     </div>
     <dialog id="modal"><form method="dialog" id="modal-form"><button class="modal-close" value="cancel" aria-label="Close">×</button><div id="modal-content"></div></form></dialog>
+    <dialog id="workflow-template-modal"><form method="dialog" id="workflow-template-form"><button class="modal-close" value="cancel" formnovalidate aria-label="Close">×</button><h2 class="modal-title">New workflow template</h2><p class="modal-sub">Name a reusable task list for future leads and jobs.</p><div class="form-grid"><label class="wide">TEMPLATE NAME<input name="name" required maxlength="120" placeholder="e.g. Wedding booking checklist" /></label></div><div class="modal-actions"><button value="cancel" formnovalidate class="outline-button">Cancel</button><button value="default" class="primary-button">Create template</button></div></form></dialog>
+    <dialog id="workflow-task-modal"><form method="dialog" id="workflow-task-form"><button class="modal-close" value="cancel" formnovalidate aria-label="Close">×</button><h2 class="modal-title" id="workflow-task-modal-title">Add a New To-do</h2><label class="workflow-task-name-label">Task Name*<input name="name" required maxlength="120" placeholder="Enter a name for this task" /></label><fieldset class="workflow-due-options"><label class="workflow-due-option"><input type="radio" name="dueMode" value="none" checked /><span><strong>No Due Date</strong><small>Tick this task manually when it's done.</small></span></label><label class="workflow-due-option"><input type="radio" name="dueMode" value="flagged" /><span><strong>Flagged on Due Date</strong><small>This task will be flagged when it's due.</small></span></label></fieldset><div class="modal-actions"><button value="default" class="primary-button">Save Workflow Task</button><button value="cancel" formnovalidate class="outline-button">Cancel</button></div></form></dialog>
     <div class="toast" id="toast"></div>
+    <script src="./session.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

@@ -12,7 +12,17 @@ node server.js
 
 Then open `http://127.0.0.1:4173`.
 
-The dashboard prototype uses browser local storage. Form submissions use the included zero-dependency Node API and are saved in `leads.json`.
+On first visit, create your owner account on the local login page using an email and a password of at least 14 characters. Account creation is available only from localhost before an owner exists. Subsequent sign-ins open Overview.
+
+All app pages (including the enquiry form) and data APIs require login. The login page and its assets are the only public pages. Website embeds therefore cannot accept unauthenticated enquiries in this private version.
+
+Sessions expire on the server after 30 minutes without user activity. Mouse, keyboard, touch and scroll activity renew the deadline; background status checks do not. Tabs share the session. Sign out invalidates it immediately; restarting the server also signs everyone out. Passwords are stored as salted scrypt hashes in the ignored `.owner.json` file, never as plaintext.
+
+Studio data is saved in the ignored `.studio.json` file; existing browser data is migrated after login and removed from local storage. Enquiries are saved in `leads.json`. These private files are never served as static assets.
+
+Before hosting, provision the owner locally, transfer private files securely, configure `APP_URL` to the exact HTTPS origin, and set `NODE_ENV=production` for Secure cookies. Use persistent private storage and backups. Sessions currently live in memory, so run a single server instance.
+
+Run authentication and expiry checks with `node --test auth.test.js`.
 
 ## What is implemented
 
